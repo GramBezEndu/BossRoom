@@ -99,7 +99,6 @@ namespace Unity.BossRoom.Gameplay.Actions
         /// <returns>false if the action decided it doesn't want to run after all, true otherwise. </returns>
         public abstract bool OnStart(ServerCharacter serverCharacter);
 
-
         /// <summary>
         /// Called each frame while the action is running.
         /// </summary>

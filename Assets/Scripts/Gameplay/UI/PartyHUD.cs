@@ -37,6 +37,9 @@ namespace Unity.BossRoom.Gameplay.UI
         private Slider[] m_PartyHealthSliders;
 
         [SerializeField]
+        private Slider[] m_PartyManaSliders;
+
+        [SerializeField]
         private Image[] m_PartyHealthGodModeImages;
 
         // track a list of hero (slot 0) + allies
@@ -107,6 +110,7 @@ namespace Unity.BossRoom.Gameplay.UI
             SetUIFromSlotData(0, m_OwnedServerCharacter);
 
             m_OwnedServerCharacter.NetHealthState.HitPoints.OnValueChanged += SetHeroHealth;
+            m_OwnedServerCharacter.NetManaState.OnValueChanged += SetHeroMana;
 
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
             m_OwnedServerCharacter.NetLifeState.IsGodMode.OnValueChanged += SetHeroGodModeStatus;
@@ -121,6 +125,11 @@ namespace Unity.BossRoom.Gameplay.UI
         void SetHeroHealth(int previousValue, int newValue)
         {
             m_PartyHealthSliders[0].value = newValue;
+        }
+
+        void SetHeroMana(int previousValue, int newValue)
+        {
+            m_PartyManaSliders[0].value = newValue;
         }
 
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
@@ -163,6 +172,11 @@ namespace Unity.BossRoom.Gameplay.UI
                 SetAllyHealth(id, newValue);
             };
 
+            serverCharacter.NetManaState.OnValueChanged += (int previousValue, int newValue) =>
+            {
+                SetAllyMana(id, newValue);
+            };
+
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
             serverCharacter.NetLifeState.IsGodMode.OnValueChanged += (value, newValue) =>
             {
@@ -177,6 +191,8 @@ namespace Unity.BossRoom.Gameplay.UI
         {
             m_PartyHealthSliders[slot].maxValue = serverCharacter.CharacterClass.BaseHP.Value;
             m_PartyHealthSliders[slot].value = serverCharacter.HitPoints;
+            m_PartyManaSliders[slot].maxValue = serverCharacter.CharacterClass.BaseMana;
+            m_PartyManaSliders[slot].value = serverCharacter.ManaPoints;
             m_PartyNames[slot].text = GetPlayerName(serverCharacter);
 
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
@@ -209,6 +225,18 @@ namespace Unity.BossRoom.Gameplay.UI
             }
 
             m_PartyHealthSliders[slot].value = hp;
+        }
+
+        void SetAllyMana(ulong id, int hp)
+        {
+            int slot = FindOrAddAlly(id);
+            // do nothing if not in a slot
+            if (slot == -1)
+            {
+                return;
+            }
+
+            m_PartyManaSliders[slot].value = hp;
         }
 
         private void OnHeroSelectionChanged(ulong prevTarget, ulong newTarget)

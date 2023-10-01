@@ -62,6 +62,17 @@ namespace Unity.BossRoom.Gameplay.GameplayObjects.Character
         /// </summary>
         public NetworkVariable<ulong> TargetId { get; } = new NetworkVariable<ulong>();
 
+        public NetworkVariable<int> NetManaState { get; private set; } = new NetworkVariable<int>();
+
+        /// <summary>
+        /// Current Mana Points. This value is populated at startup time from CharacterClass data.
+        /// </summary>
+        public int ManaPoints
+        {
+            get => NetManaState.Value;
+            private set => NetManaState.Value = value;
+        }
+
         /// <summary>
         /// Current HP. This value is populated at startup time from CharacterClass data.
         /// </summary>
@@ -99,6 +110,8 @@ namespace Unity.BossRoom.Gameplay.GameplayObjects.Character
         /// </summary>
         public CharacterTypeEnum CharacterType => CharacterClass.CharacterType;
 
+        public ManaReceiver ManaReceiver => m_ManaReceiver;
+
         private ServerActionPlayer m_ServerActionPlayer;
 
         /// <summary>
@@ -122,6 +135,9 @@ namespace Unity.BossRoom.Gameplay.GameplayObjects.Character
 
         [SerializeField]
         DamageReceiver m_DamageReceiver;
+
+        [SerializeField]
+        ManaReceiver m_ManaReceiver;
 
         [SerializeField]
         ServerCharacterMovement m_Movement;
@@ -156,6 +172,7 @@ namespace Unity.BossRoom.Gameplay.GameplayObjects.Character
             {
                 NetLifeState.LifeState.OnValueChanged += OnLifeStateChanged;
                 m_DamageReceiver.DamageReceived += ReceiveHP;
+                m_ManaReceiver.ManaReceived += ReceiveMana;
                 m_DamageReceiver.CollisionEntered += CollisionEntered;
 
                 if (IsNpc)
@@ -168,7 +185,9 @@ namespace Unity.BossRoom.Gameplay.GameplayObjects.Character
                     var startingAction = new ActionRequestData() { ActionID = m_StartingAction.ActionID };
                     PlayAction(ref startingAction);
                 }
+
                 InitializeHitPoints();
+                InitializeManaPoints();
             }
         }
 
@@ -253,6 +272,11 @@ namespace Unity.BossRoom.Gameplay.GameplayObjects.Character
                     }
                 }
             }
+        }
+
+        void InitializeManaPoints()
+        {
+            ManaPoints = CharacterClass.BaseMana;
         }
 
         /// <summary>
@@ -350,6 +374,18 @@ namespace Unity.BossRoom.Gameplay.GameplayObjects.Character
 
                 m_ServerActionPlayer.ClearActions(false);
             }
+        }
+
+        void ReceiveMana(int amount)
+        {
+            if (amount > ManaPoints)
+            {
+                Debug.LogWarning("Amount to extract was larger then current mana points");
+                ManaPoints = 0;
+                return;
+            }
+
+            ManaPoints += amount;
         }
 
         /// <summary>

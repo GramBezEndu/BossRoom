@@ -174,9 +174,9 @@ namespace Unity.BossRoom.Gameplay.Actions
             if (m_Queue.Count > 0)
             {
                 float reuseTime = m_Queue[0].Config.ReuseTimeSeconds;
-                if (reuseTime > 0
-                    && m_LastUsedTimestamps.TryGetValue(m_Queue[0].ActionID, out float lastTimeUsed)
-                    && Time.time - lastTimeUsed < reuseTime)
+                int manaCost = m_Queue[0].Config.ManaCost;
+
+                if (ActionRecentlyStarted(reuseTime) || NotEnoughMana(manaCost))
                 {
                     // we've already started one of these too recently
                     AdvanceQueue(false); // note: this will call StartAction() recursively if there's more stuff in the queue ...
@@ -194,6 +194,8 @@ namespace Unity.BossRoom.Gameplay.Actions
                     AdvanceQueue(false); // note: this will call StartAction() recursively if there's more stuff in the queue ...
                     return;              // ... so it's important not to try to do anything more here
                 }
+
+                m_ServerCharacter.ManaReceiver.ReceiveMana(-m_Queue[0].Config.ManaCost);
 
                 // if this Action is interruptible, that means movement should interrupt it... character needs to be stationary for this!
                 // So stop any movement that's already happening before we begin
@@ -214,6 +216,18 @@ namespace Unity.BossRoom.Gameplay.Actions
                     return;              // ... so it's important not to try to do anything more here
                 }
             }
+        }
+
+        private bool ActionRecentlyStarted(float reuseTime)
+        {
+            return reuseTime > 0
+                                && m_LastUsedTimestamps.TryGetValue(m_Queue[0].ActionID, out float lastTimeUsed)
+                                && Time.time - lastTimeUsed < reuseTime;
+        }
+
+        private bool NotEnoughMana(int manaCost)
+        {
+            return m_ServerCharacter.ManaPoints < manaCost;
         }
 
         /// <summary>
