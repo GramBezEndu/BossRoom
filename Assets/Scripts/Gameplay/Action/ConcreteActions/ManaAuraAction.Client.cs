@@ -1,11 +1,7 @@
-using System.Collections;
 using System.Collections.Generic;
-using System.Text;
-using Unity.BossRoom.Gameplay.GameplayObjects;
 using Unity.BossRoom.Gameplay.GameplayObjects.Character;
 using Unity.BossRoom.VisualEffects;
 using UnityEngine;
-using System.Linq;
 
 namespace Unity.BossRoom.Gameplay.Actions
 {
@@ -13,9 +9,15 @@ namespace Unity.BossRoom.Gameplay.Actions
     {
         private float m_ActionStartTimeClient;
 
+        /// <summary>
+        /// List of active special graphics playing on the target.
+        /// </summary>
+        private List<SpecialFXGraphic> m_SpawnedGraphics = null;
+
         public override bool OnStartClient(ClientCharacter clientCharacter)
         {
             base.OnStartClient(clientCharacter);
+
             m_ActionStartTimeClient = Time.time;
             m_SpawnedGraphics = InstantiateSpecialFXGraphics(clientCharacter.transform, true);
             return true;

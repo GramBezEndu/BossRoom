@@ -58,6 +58,9 @@ namespace Unity.BossRoom.Gameplay.Actions
         [Tooltip("For actions that cause a knockback, how long does it apply force to the target?")]
         public float KnockbackDuration;
 
+        [Tooltip("For actions that use a tick system, this represents the time interval between each tick")]
+        public float TickInterval;
+
         [Tooltip("The radius of effect for this action. Default is 0 if not needed")]
         public float Radius;
 
