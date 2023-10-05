@@ -378,14 +378,12 @@ namespace Unity.BossRoom.Gameplay.GameplayObjects.Character
 
         void ReceiveMana(int amount)
         {
-            if (amount > ManaPoints)
+            if (ManaPoints + amount < 0)
             {
                 Debug.LogWarning("Amount to extract was larger then current mana points");
-                ManaPoints = 0;
-                return;
             }
 
-            ManaPoints += amount;
+            ManaPoints = Math.Clamp(ManaPoints + amount, 0, CharacterClass.BaseMana);
         }
 
         /// <summary>
